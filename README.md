@@ -181,3 +181,26 @@ Para ejecutar la suite de 16 pruebas de integración:
 
 Reporte generado en: `target/surefire-reports/pe.upeu.ecorecicla.EcoApiIntegrationTests.txt`
 Colección de Postman: [`EcoAPI_Coleccion_Examen.json`](file:///c:/Users/XD/Documents/EcoRecicla/EcoReciclaBackend/EcoAPI_Coleccion_Examen.json)
+
+---
+
+## Solicitud de Cambio SC-B: Rol AUDITOR (Aislamiento en rama `sc-b-acosta`)
+
+### Descripción del Cambio
+Incorporación del nuevo rol **`AUDITOR`** con todos los privilegios de lectura y ninguno de escritura:
+- **Privilegios concedidos**: `PUNTO_LEER`, `PESAJE_LEER`.
+- **Privilegios denegados (403 Forbidden)**: `PESAJE_CREAR`, `PESAJE_EDITAR`, `PESAJE_ANULAR`, `RUTA_CERRAR`, `PUNTO_GESTIONAR`, `USUARIO_GESTIONAR`.
+- **Arquitectura**: Definido puramente en la fuente de privilegios (`Rol.AUDITOR`). Ni el filtro de seguridad ni los controladores contienen sentencias condicionales `if (rol == AUDITOR)`.
+
+### Usuario de Prueba
+* **Usuario**: `auditor1`
+* **Contraseña**: `Eco2026*`
+* **Rol**: `AUDITOR`
+
+### Arranque Aislado para Demostración (sin alterar la BD de Parte I)
+Para evaluar SC-B sin modificar la base de datos de Parte I (`./data/ecorecicla.mv.db`), se provee el perfil `scb`:
+```powershell
+.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=scb
+```
+Esta configuración apunta automáticamente a la base de datos aislada `./data/ecorecicla-scb.mv.db`.
+

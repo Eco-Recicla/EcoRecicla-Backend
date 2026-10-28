@@ -360,4 +360,58 @@ class EcoApiIntegrationTests {
             .andExpect(jsonPath("$.totalPaginas").isNumber)
             .andExpect(jsonPath("$.ultima").isBoolean)
     }
+
+    @Test
+    fun `17 SC-B Rol AUDITOR permite todas las lecturas y deniega todas las escrituras con 403`() {
+        val loginReq = LoginRequest("auditor1", "Eco2026*")
+        val loginRes = mockMvc.perform(
+            post("/api/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginReq))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.token").isString)
+            .andExpect(jsonPath("$.rol").value("AUDITOR"))
+            .andExpect(jsonPath("$.privilegios").isArray)
+            .andReturn()
+
+        val tokenAuditor = objectMapper.readTree(loginRes.response.contentAsString).get("token").asText()
+
+        // 1. Lecturas permitidas (200 OK)
+        mockMvc.perform(get("/api/v1/rutas/hoy").header("Authorization", "Bearer $tokenAuditor"))
+            .andExpect(status().isOk)
+
+        mockMvc.perform(get("/api/v1/puntos").header("Authorization", "Bearer $tokenAuditor"))
+            .andExpect(status().isOk)
+
+        mockMvc.perform(get("/api/v1/puntos/1/pesajes").header("Authorization", "Bearer $tokenAuditor"))
+            .andExpect(status().isOk)
+
+        // 2. Escrituras denegadas (403 Forbidden)
+        val crearPesajeReq = PesajeRequest(
+            puntoId = 1L,
+            material = "Metal",
+            pesoBruto = 100.0,
+            tara = 10.0
+        )
+        mockMvc.perform(
+            post("/api/v1/pesajes")
+                .header("Authorization", "Bearer $tokenAuditor")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(crearPesajeReq))
+        )
+            .andExpect(status().isForbidden)
+
+        mockMvc.perform(
+            delete("/api/v1/pesajes/1?motivo=IntentoAuditor")
+                .header("Authorization", "Bearer $tokenAuditor")
+        )
+            .andExpect(status().isForbidden)
+
+        mockMvc.perform(
+            post("/api/v1/rutas/1/cerrar")
+                .header("Authorization", "Bearer $tokenAuditor")
+        )
+            .andExpect(status().isForbidden)
+    }
 }
