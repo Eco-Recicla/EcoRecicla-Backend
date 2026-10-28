@@ -25,6 +25,11 @@
       "key": "tokenAdmin",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "tokenAuditor",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -338,6 +343,91 @@
               "raw": "{\n  \"razonSocial\": \"Nuevo Acopio Industrial Ate\",\n  \"direccion\": \"Av. Nicolás Ayllón 4500, Ate\",\n  \"zona\": \"Este\",\n  \"materialHabitual\": \"Chatarra Ferrosa\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/puntos", "host": ["{{baseUrl}}"], "path": ["puntos"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. SC-B Rol Auditor (Lectura Sin Escritura)",
+      "item": [
+        {
+          "name": "Login Auditor (Captura tokenAuditor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.collectionVariables.set('tokenAuditor', data.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"auditor1\",\n  \"contrasena\": \"Eco2026*\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Auditor Consulta Ruta de Hoy (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAuditor}}" }],
+            "url": { "raw": "{{baseUrl}}/rutas/hoy", "host": ["{{baseUrl}}"], "path": ["rutas", "hoy"] }
+          }
+        },
+        {
+          "name": "Auditor Consulta Puntos de Acopio (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAuditor}}" }],
+            "url": { "raw": "{{baseUrl}}/puntos?pagina=0&tamanio=10", "host": ["{{baseUrl}}"], "path": ["puntos"] }
+          }
+        },
+        {
+          "name": "Auditor Consulta Pesajes de Punto (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAuditor}}" }],
+            "url": { "raw": "{{baseUrl}}/puntos/1/pesajes?pagina=0&tamanio=10", "host": ["{{baseUrl}}"], "path": ["puntos", "1", "pesajes"] }
+          }
+        },
+        {
+          "name": "Auditor intenta Crear Pesaje (403 Forbidden)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenAuditor}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntoId\": 1,\n  \"material\": \"Vidrio\",\n  \"pesoBruto\": 80.0,\n  \"tara\": 10.0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/pesajes", "host": ["{{baseUrl}}"], "path": ["pesajes"] }
+          }
+        },
+        {
+          "name": "Auditor intenta Anular Pesaje (403 Forbidden)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAuditor}}" }],
+            "url": { "raw": "{{baseUrl}}/pesajes/1?motivo=IntentoAuditor", "host": ["{{baseUrl}}"], "path": ["pesajes", "1"] }
+          }
+        },
+        {
+          "name": "Auditor intenta Cerrar Ruta (403 Forbidden)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAuditor}}" }],
+            "url": { "raw": "{{baseUrl}}/rutas/1/cerrar", "host": ["{{baseUrl}}"], "path": ["rutas", "1", "cerrar"] }
           }
         }
       ]

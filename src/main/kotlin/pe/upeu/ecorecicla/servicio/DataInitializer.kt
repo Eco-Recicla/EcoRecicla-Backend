@@ -30,6 +30,18 @@ class DataInitializer(
     @Transactional
     override fun run(vararg args: String?) {
         if (usuarioRepository.count() > 0) {
+            if (usuarioRepository.findByUsername("auditor1") == null) {
+                val passHash = passwordEncoder.encode("Eco2026*")
+                usuarioRepository.save(
+                    Usuario(
+                        username = "auditor1",
+                        passwordHash = passHash,
+                        nombreCompleto = "Beatriz Morales (Auditora)",
+                        rol = Rol.AUDITOR,
+                        activo = true
+                    )
+                )
+            }
             return // Datos ya inicializados previamente de forma persistente
         }
 
@@ -72,6 +84,16 @@ class DataInitializer(
                 passwordHash = passHash,
                 nombreCompleto = "Luis Fernandez (Operario 2)",
                 rol = Rol.OPERARIO,
+                activo = true
+            )
+        )
+
+        usuarioRepository.save(
+            Usuario(
+                username = "auditor1",
+                passwordHash = passHash,
+                nombreCompleto = "Beatriz Morales (Auditora)",
+                rol = Rol.AUDITOR,
                 activo = true
             )
         )
