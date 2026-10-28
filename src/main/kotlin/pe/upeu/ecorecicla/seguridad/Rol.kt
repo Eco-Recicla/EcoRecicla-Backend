@@ -29,5 +29,12 @@ enum class Rol(val descripcion: String, val privilegios: Set<Privilegio>) {
             Privilegio.PUNTO_GESTIONAR,
             Privilegio.USUARIO_GESTIONAR
         )
+    ),
+    AUDITOR(
+        "Auditor de operaciones",
+        setOf(
+            Privilegio.PUNTO_LEER,
+            Privilegio.PESAJE_LEER
+        )
     )
 }
