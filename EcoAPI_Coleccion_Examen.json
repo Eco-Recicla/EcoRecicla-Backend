@@ -1,0 +1,346 @@
+{
+  "info": {
+    "name": "EcoAPI - Examen Parcial U2 (Versión B - EcoRecicla)",
+    "_postman_id": "a9d7e6c4-1234-4567-89ab-cdef01234567",
+    "description": "Colección completa y reproducible de peticiones para verificar EcoAPI: autenticación JWT, matriz de privilegios, reglas RN-01 a RN-04, CRUD con DELETE 204 y paginación envoltorio.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "tokenOperario",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenSupervisor",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenAdmin",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Autenticación",
+      "item": [
+        {
+          "name": "Login Operario (Captura tokenOperario)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.collectionVariables.set('tokenOperario', data.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"operario1\",\n  \"contrasena\": \"Eco2026*\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login Supervisor (Captura tokenSupervisor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.collectionVariables.set('tokenSupervisor', data.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"supervisor1\",\n  \"contrasena\": \"Eco2026*\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login Administrador (Captura tokenAdmin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.collectionVariables.set('tokenAdmin', data.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"admin\",\n  \"contrasena\": \"Eco2026*\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login Incorrecto (401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"operario1\",\n  \"contrasena\": \"ClaveInvalida\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Usuario Actual (GET /auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenOperario}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        },
+        {
+          "name": "Token Ausente (401)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Rutas y Puntos de Acopio",
+      "item": [
+        {
+          "name": "Ruta del Día de Hoy (GET /rutas/hoy)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenOperario}}" }],
+            "url": { "raw": "{{baseUrl}}/rutas/hoy", "host": ["{{baseUrl}}"], "path": ["rutas", "hoy"] }
+          }
+        },
+        {
+          "name": "Listar Puntos Paginados (GET /puntos)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenOperario}}" }],
+            "url": { "raw": "{{baseUrl}}/puntos?pagina=0&tamanio=5", "host": ["{{baseUrl}}"], "path": ["puntos"], "query": [{ "key": "pagina", "value": "0" }, { "key": "tamanio", "value": "5" }] }
+          }
+        },
+        {
+          "name": "Listar Puntos Filtrados por Zona (GET /puntos?zona=Sur)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenOperario}}" }],
+            "url": { "raw": "{{baseUrl}}/puntos?zona=Sur", "host": ["{{baseUrl}}"], "path": ["puntos"], "query": [{ "key": "zona", "value": "Sur" }] }
+          }
+        },
+        {
+          "name": "Pesajes de un Punto (GET /puntos/1/pesajes)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenOperario}}" }],
+            "url": { "raw": "{{baseUrl}}/puntos/1/pesajes", "host": ["{{baseUrl}}"], "path": ["puntos", "1", "pesajes"] }
+          }
+        },
+        {
+          "name": "Registrar Omisión de Punto (POST /rutas/2/puntos/4/omision)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenOperario}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Empresa cerrada por festividad local\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/rutas/2/puntos/4/omision", "host": ["{{baseUrl}}"], "path": ["rutas", "2", "puntos", "4", "omision"] }
+          }
+        },
+        {
+          "name": "Cerrar Ruta - Faltan Puntos (RN-04 -> 409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenSupervisor}}" }],
+            "url": { "raw": "{{baseUrl}}/rutas/2/cerrar", "host": ["{{baseUrl}}"], "path": ["rutas", "2", "cerrar"] }
+          }
+        },
+        {
+          "name": "Operario intenta Cerrar Ruta (Sin Privilegio -> 403)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenOperario}}" }],
+            "url": { "raw": "{{baseUrl}}/rutas/2/cerrar", "host": ["{{baseUrl}}"], "path": ["rutas", "2", "cerrar"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Pesajes y Reglas de Negocio",
+      "item": [
+        {
+          "name": "Registrar Pesaje Válido (201 Created con pesoNeto calculado)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenOperario}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntoId\": 1,\n  \"material\": \"Plástico PET\",\n  \"pesoBruto\": 150.0,\n  \"tara\": 15.0,\n  \"clientOperationId\": \"op-postman-01\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/pesajes", "host": ["{{baseUrl}}"], "path": ["pesajes"] }
+          }
+        },
+        {
+          "name": "RN-03: Peso Bruto <= Tara (400 Bad Request)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenOperario}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntoId\": 1,\n  \"material\": \"Plástico\",\n  \"pesoBruto\": 10.0,\n  \"tara\": 15.0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/pesajes", "host": ["{{baseUrl}}"], "path": ["pesajes"] }
+          }
+        },
+        {
+          "name": "RN-01: Registrar en Ruta Cerrada (409 Conflict)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenSupervisor}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntoId\": 7,\n  \"rutaId\": 1,\n  \"material\": \"Metal\",\n  \"pesoBruto\": 80.0,\n  \"tara\": 10.0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/pesajes", "host": ["{{baseUrl}}"], "path": ["pesajes"] }
+          }
+        },
+        {
+          "name": "RN-02: Operario corrige pesaje ajeno (403 Forbidden)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenOperario}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"material\": \"Metal Corregido\",\n  \"pesoBruto\": 220.0,\n  \"tara\": 20.0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/pesajes/12", "host": ["{{baseUrl}}"], "path": ["pesajes", "12"] }
+          }
+        },
+        {
+          "name": "Supervisor corrige pesaje (200 OK)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenSupervisor}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"material\": \"Metal Corregido por Supervisor\",\n  \"pesoBruto\": 230.0,\n  \"tara\": 20.0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/pesajes/12", "host": ["{{baseUrl}}"], "path": ["pesajes", "12"] }
+          }
+        },
+        {
+          "name": "Anular Pesaje Lógicamente (DELETE /pesajes/13?motivo=... -> 204)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenSupervisor}}" }],
+            "url": { "raw": "{{baseUrl}}/pesajes/13?motivo=Anulacion+por+supervisor", "host": ["{{baseUrl}}"], "path": ["pesajes", "13"], "query": [{ "key": "motivo", "value": "Anulacion por supervisor" }] }
+          }
+        },
+        {
+          "name": "Operario intenta Anular Pesaje (403 Forbidden)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenOperario}}" }],
+            "url": { "raw": "{{baseUrl}}/pesajes/13?motivo=Intento+anulacion", "host": ["{{baseUrl}}"], "path": ["pesajes", "13"], "query": [{ "key": "motivo", "value": "Intento anulacion" }] }
+          }
+        },
+        {
+          "name": "Admin intenta Crear Pesaje (403 Forbidden)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntoId\": 1,\n  \"material\": \"Plástico\",\n  \"pesoBruto\": 50.0,\n  \"tara\": 5.0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/pesajes", "host": ["{{baseUrl}}"], "path": ["pesajes"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Administración",
+      "item": [
+        {
+          "name": "Listar Usuarios (GET /admin/usuarios)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/usuarios", "host": ["{{baseUrl}}"], "path": ["admin", "usuarios"] }
+          }
+        },
+        {
+          "name": "Crear Punto de Acopio (POST /puntos con PUNTO_GESTIONAR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"razonSocial\": \"Nuevo Acopio Industrial Ate\",\n  \"direccion\": \"Av. Nicolás Ayllón 4500, Ate\",\n  \"zona\": \"Este\",\n  \"materialHabitual\": \"Chatarra Ferrosa\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/puntos", "host": ["{{baseUrl}}"], "path": ["puntos"] }
+          }
+        }
+      ]
+    }
+  ]
+}
